@@ -1,7 +1,7 @@
 import requests
 from bs4 import BeautifulSoup
 
-BASE_URL = 'https://999.md/ro/'
+BASE_URL = 'https://999.md/'
 
 
 def extract_urls(page_url, accumulated_urls=None):
