@@ -15,7 +15,7 @@ rabbitmq_connection = pika.BlockingConnection(pika.ConnectionParameters('127.0.0
 channel = rabbitmq_connection.channel()
 
 # Declare RabbitMQ queue
-channel.queue_declare(queue='chat_messages')
+channel.queue_declare(queue='messages')
 
 def format_message(msg_type, payload):
     return json.dumps({"type": msg_type, "payload": payload})
@@ -35,13 +35,13 @@ def broadcast_messages(channel, method, properties, body):
     print(f"Broadcasting in {client_room} from {message_data['payload']['sender']}: {message_data['payload']['text']}")
     for client in clients_in_room:
         client.send(broadcast_message.encode('utf-8'))
-
+    time.sleep(10)
     # Acknowledge the message
     channel.basic_ack(delivery_tag=method.delivery_tag)
 
 # Start consuming from RabbitMQ in a separate thread
 def start_consuming():
-    channel.basic_consume(queue='chat_messages', on_message_callback=broadcast_messages, auto_ack=False)
+    channel.basic_consume(queue='messages', on_message_callback=broadcast_messages, auto_ack=False)
     channel.start_consuming()
 
 consume_thread = threading.Thread(target=start_consuming, daemon=True)
@@ -81,7 +81,7 @@ def handle_client(client_socket, client_address):
                 # Publish message to RabbitMQ instead of broadcasting directly
                 channel.basic_publish(
                     exchange='',
-                    routing_key='chat_messages',
+                    routing_key='messages',
                     body=json.dumps(message_data),
                     properties=pika.BasicProperties(
                         delivery_mode=2,  # make message persistent

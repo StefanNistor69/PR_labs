@@ -14,8 +14,8 @@ def receive_messages(ch, method, properties, body):
         print(f"{name}> ", end='', flush=True)  # Reprint the user's prompt
 
 def listen_for_messages():
-    channel.queue_bind(exchange=EXCHANGE_NAME, queue=queue_name, routing_key=room)
-    channel.basic_consume(queue=queue_name, on_message_callback=receive_messages, auto_ack=True)
+    channel.queue_bind(exchange=EXCHANGE_NAME, queue='messages', routing_key=room)
+    channel.basic_consume(queue='messages', on_message_callback=receive_messages, auto_ack=True)
     channel.start_consuming()
 
 name = input("Enter your name: ")
@@ -23,7 +23,7 @@ room = input("Enter room name: ")
 
 connection = pika.BlockingConnection(pika.ConnectionParameters(HOST))
 channel = connection.channel()
-channel.exchange_declare(exchange=EXCHANGE_NAME, exchange_type='topic')  # Changed to 'topic' type
+channel.exchange_declare(exchange=EXCHANGE_NAME, exchange_type='topic')
 
 result = channel.queue_declare('', exclusive=True)
 queue_name = result.method.queue
